@@ -124,78 +124,53 @@ def depthFirstSearch(problem: SearchProblem):
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    res = {}
-    res['res'] = []
-    def dfs(visited,nexQ):
-        
-        nex = util.Queue()
-        while not nexQ.isEmpty():
-            
-            action = nexQ.pop()
-            if visited.get(action[0],-1) != -1:
+
+    fringe = util.Queue()
+    state = problem.getStartState()
+    visited = {} 
+    fringe.push((state, "", [])) # each element is (state, action, path so far)
+
+    while not fringe.isEmpty():
+        action = fringe.pop()
+        state, stepAction, pathSoFar = action[0], action[1], action[2]
+        if visited.get(state, -1) != -1: # skip visited states
+            continue
+        visited[state] = 1 # mark as visited
+        if stepAction != "": # appending action
+            pathSoFar.append(stepAction) 
+        if problem.isGoalState(state): 
+            return pathSoFar
+        for suc in problem.getSuccessors(state):
+            if visited.get(suc[0], -1) != -1: # skip visited states
                 continue
-            visited[action[0]] = 1
-            nPath = action[2]
-            if action[1] != "":
-                nPath.append(action[1])
-            if problem.isGoalState(action[0]):
-                res['res'] = nPath
-                return 
-            problem.startState = action[0]
-            if res['res'] != []:
-                return
-            print(action[0])
-            for suc in problem.getSuccessors(action[0]):
-                if visited.get(suc[0],-1) != -1:
-                    continue
-                cop = nPath[:]
-                nex.push((suc[0],suc[1],cop))
-        dfs(visited,nex)
-        
-        return
-    nex = util.Queue()
-    nex.push((problem.getStartState(),"",[]))
-       
-    dfs({},nex)
-    return res['res']
+            copy = pathSoFar[:]
+            fringe.push((suc[0], suc[1], copy))
+    return []
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    res = {}
-    res['res'] = []
-    def dfs(visited,nexQ):
-        
-        nex = util.PriorityQueue()
-        while not nexQ.isEmpty():
-            
-            action = nexQ.pop()
-            if visited.get(action[0],-1) != -1:
-                continue
-            visited[action[0]] = 1
-            nPath = action[2]
-            if action[1] != "":
-                nPath.append(action[1])
-            if problem.isGoalState(action[0]):
-                res['res'] = nPath
-                return 
-            problem.startState = action[0]
-            if res['res'] != []:
-                return
-            for suc in problem.getSuccessors(action[0]):
-                if visited.get(suc[0],-1) != -1:
-                    continue
-                cop = nPath[:]
-                nexQ.push((suc[0],suc[1],cop,suc[2]+action[3]) , suc[2]+action[3])
-        
-        
-        return
-    nex = util.PriorityQueue()
-    nex.push((problem.getStartState(),"",[],0),0)
-       
-    dfs({},nex)
-    return res['res']
+    visited = {}
+    nexQ = util.PriorityQueue()
+    nexQ.push((problem.getStartState(),"",[],0),0)
 
+    while not nexQ.isEmpty():
+        action = nexQ.pop()
+        if visited.get(action[0],-1) != -1:
+            continue
+        visited[action[0]] = 1
+        nPath = action[2]
+        if action[1] != "":
+            nPath.append(action[1])
+        if problem.isGoalState(action[0]):
+            return nPath
+        for suc in problem.getSuccessors(action[0]):
+            if visited.get(suc[0],-1) != -1:
+                continue
+            cop = nPath[:]
+            nexQ.push((suc[0],suc[1],cop,suc[2]+action[3]) , suc[2]+action[3])
+    return []
+    
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
@@ -206,40 +181,26 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    res = {}
-    res['res'] = []
-    def dfs(visited,nexQ):
-        
-        nex = util.PriorityQueue()
-        while not nexQ.isEmpty():
-            
-            action = nexQ.pop()
-            if visited.get(action[0],-1) != -1:
-                continue
-            visited[action[0]] = 1
-            nPath = action[2]
-            if action[1] != "":
-                nPath.append(action[1])
-            if problem.isGoalState(action[0]):
-                res['res'] = nPath
-                return 
-            problem.startState = action[0]
-            if res['res'] != []:
-                return
-            for suc in problem.getSuccessors(action[0]):
-                if visited.get(suc[0],-1) != -1:
-                    continue
-                cop = nPath[:]
-                nexQ.push((suc[0],suc[1],cop,suc[2]+action[3]) , suc[2]+action[3]+heuristic(suc[0],problem))
-        
-        
-        return
-    nex = util.PriorityQueue()
-    nex.push((problem.getStartState(),"",[],0),0)
-       
-    dfs({},nex)
-    return res['res']
+    visited = {}
+    nexQ = util.PriorityQueue()
+    nexQ.push((problem.getStartState(),"",[],0),0)
 
+    while not nexQ.isEmpty():
+        action = nexQ.pop()
+        if visited.get(action[0],-1) != -1:
+            continue
+        visited[action[0]] = 1
+        nPath = action[2]
+        if action[1] != "":
+            nPath.append(action[1])
+        if problem.isGoalState(action[0]):
+            return nPath
+        for suc in problem.getSuccessors(action[0]):
+            if visited.get(suc[0],-1) != -1:
+                continue
+            cop = nPath[:]
+            nexQ.push((suc[0],suc[1],cop,suc[2]+action[3]) , suc[2]+action[3]+heuristic(suc[0],problem))
+    return []
 
 # Abbreviations
 bfs = breadthFirstSearch
