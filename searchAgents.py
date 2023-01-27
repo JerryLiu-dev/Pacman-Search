@@ -284,7 +284,6 @@ class CornersProblem(search.SearchProblem):
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
         top, right = self.walls.height-2, self.walls.width-2
-        self.visCorner = []
         self.corners = ((1,1), (1,top), (right, 1), (right, top))
         for corner in self.corners:
             if not startingGameState.hasFood(*corner):
@@ -297,21 +296,15 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        return self.startingPosition
 
-    def isGoalState(self, state, path=[]):
+        return (self.startingPosition, False, False, False, False)
+
+    def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        found = False
-        if state in self.corners:
-            found = True
-      
-        if found:
-            return '0'
-            
-        return False
+        return state[1] & state[2] & state[3] & state[4]
 
     def getSuccessors(self, state: Any):
         """
@@ -333,13 +326,16 @@ class CornersProblem(search.SearchProblem):
             #   nextx, nexty = int(x + dx), int(y + dy)
             #   hitsWall = self.walls[nextx][nexty]
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            x,y = state
+            x,y = state[0]
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             if not self.walls[nextx][nexty]:
-                nextState = (nextx, nexty)
+                nextState = [(nextx, nexty),state[1],state[2],state[3],state[4]]
                 cost = 1
-                successors.append( ( nextState, action, cost) )
+                for count, corner in enumerate(self.corners):
+                    if nextState[0] == corner:
+                        nextState[count+1] = True
+                successors.append( (tuple(nextState), action, cost) )
 
             "*** YOUR CODE HERE ***"
 

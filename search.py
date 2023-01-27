@@ -126,21 +126,21 @@ def breadthFirstSearch(problem: SearchProblem):
     "*** YOUR CODE HERE ***"
 
     fringe = util.Queue()
-    state = problem.getStartState()
+    coord = problem.getStartState()
     visited = {} 
-    fringe.push((state, "", [])) # each element is (state, action, path so far)
+    fringe.push((coord, "", [])) # each element is (state, action, path so far)
 
     while not fringe.isEmpty():
         action = fringe.pop()
-        state, stepAction, pathSoFar = action[0], action[1], action[2]
-        if visited.get(state, -1) != -1: # skip visited states
+        coord, stepAction, pathSoFar = action[0], action[1], action[2]
+        if visited.get(coord, -1) != -1: # skip visited states
             continue
-        visited[state] = 1 # mark as visited
+        visited[coord] = 1 # mark as visited
         if stepAction != "": # appending action
             pathSoFar.append(stepAction) 
-        if problem.isGoalState(state): 
+        if problem.isGoalState(coord): 
             return pathSoFar
-        for suc in problem.getSuccessors(state):
+        for suc in problem.getSuccessors(coord):
             if visited.get(suc[0], -1) != -1: # skip visited states
                 continue
             copy = pathSoFar[:]
