@@ -284,6 +284,7 @@ class CornersProblem(search.SearchProblem):
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
         top, right = self.walls.height-2, self.walls.width-2
+        self.visCorner = []
         self.corners = ((1,1), (1,top), (right, 1), (right, top))
         for corner in self.corners:
             if not startingGameState.hasFood(*corner):
@@ -296,15 +297,16 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-
-        return (self.startingPosition, False, False, False, False)
+        return (self.startingPosition,False,False,False,False)
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        return state[1] & state[2] & state[3] & state[4]
+        
+            
+        return state[1] & state[2] & state[3] & state[4] 
 
     def getSuccessors(self, state: Any):
         """
@@ -330,12 +332,14 @@ class CornersProblem(search.SearchProblem):
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             if not self.walls[nextx][nexty]:
-                nextState = [(nextx, nexty),state[1],state[2],state[3],state[4]]
-                cost = 1
+                nextCoord = (nextx, nexty)
+                nextState = list(state[:])
                 for count, corner in enumerate(self.corners):
-                    if nextState[0] == corner:
+                    if nextCoord == corner:
                         nextState[count+1] = True
-                successors.append( (tuple(nextState), action, cost) )
+                cost = 1
+                nextState[0] = nextCoord
+                successors.append( ( tuple(nextState), action, cost) )
 
             "*** YOUR CODE HERE ***"
 
@@ -371,28 +375,31 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     """
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
-
+  
     "*** YOUR CODE HERE ***"
+
     visited = []
-    currPosition = state[0]
+    currPos = state[0]
+    bestPos = ""
+    temp = list(state)[1:]
+    for ct, c in enumerate(temp):
+        if c:
+            visited.append(corners[ct])
+    bestDist = float('inf')
     sum = 0
-    bestCorner = ""
-    bestDistance = float("inf")
-    while len(visited) != len(corners):
+    
+    while len(visited) < 4:
         for corner in corners:
             if corner not in visited:
-                manhattanDist = util.manhattanDistance(currPosition, corner)
-                if manhattanDist < bestDistance:
-                    bestDistance = manhattanDist
-                    bestCorner = corner
-        currPosition = bestCorner
-        visited.append(bestCorner)
-        sum += bestDistance
-    return sum
-
-
-
-    # return 0 # Default to trivial solution
+                mD = util.manhattanDistance(corner,currPos)
+                if mD < bestDist:
+                    bestDist = mD
+                    bestPos = corner
+        visited.append(bestPos)
+        sum += bestDist
+        currPos = bestPos
+        bestDist = float('inf')
+    return sum # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -486,7 +493,24 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+
+    sum = 0
+    bestDist = float("inf")
+    bestPos = ""
+    foodCoords = foodGrid.asList()
+
+    while len(foodCoords) > 0:
+        for fCoord in foodCoords:
+            mazeDist = mazeDistance(position, fCoord, problem.startingGameState)
+            if mazeDist <= bestDist:
+                bestDist = mazeDist
+                bestPos = fCoord
+        sum += bestDist
+        foodCoords.remove(bestPos)
+        position = bestPos
+        bestDist = float("inf")
+
+    return sum # Default to trivial solution
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
