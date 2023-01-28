@@ -493,24 +493,17 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-
-    sum = 0
-    bestDist = float("inf")
-    bestPos = ""
+    
+    bestDist = 0
     foodCoords = foodGrid.asList()
 
-    while len(foodCoords) > 0:
-        for fCoord in foodCoords:
-            mazeDist = mazeDistance(position, fCoord, problem.startingGameState)
-            if mazeDist <= bestDist:
-                bestDist = mazeDist
-                bestPos = fCoord
-        sum += bestDist
-        foodCoords.remove(bestPos)
-        position = bestPos
-        bestDist = float("inf")
+   
+    for fCoord in foodCoords:
+        mazeDist = mazeDistance(position, fCoord, problem.startingGameState)
+        if mazeDist > bestDist:
+            bestDist = mazeDist
 
-    return sum # Default to trivial solution
+    return bestDist # Default to trivial solution
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
